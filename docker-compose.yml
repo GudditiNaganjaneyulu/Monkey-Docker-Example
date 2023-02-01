@@ -1,10 +1,10 @@
+version: '1'
 services:
-  monkeyapp:
-    build:
+  web:
+    build: 
       - dockerfile: Dockerfile
         context: .
-        ports:
-          - '80:80'
+    ports:
+      - '80:80'
 
-          
-    
+
