@@ -3,7 +3,7 @@ name: Build and Push Docker Image
 on:
   push:
     branches:
-      - master
+      - main
 
 env:
   DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
@@ -19,7 +19,8 @@ jobs:
 
       - name: Build Docker Image
         run: |
-          docker build -t gudditi/monkey:$(date +%s) .
+          docker build -t gudditi/monkey:$(date +%s)  .
+
       - name: Login to Docker registry
         run: echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
 
