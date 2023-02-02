@@ -19,7 +19,7 @@ jobs:
 
       - name: Build Docker Image
         run: |
-          docker build -t gudditi/monkey:$(date +%s)  .
+          docker build -t gudditi/monkey  .
 
       - name: Login to Docker registry
         run: echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
