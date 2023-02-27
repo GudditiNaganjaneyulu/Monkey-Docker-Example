@@ -17,7 +17,7 @@ jobs:
           name: push the image to docker hub
           command: |
             echo "$DOCKERHUB_PASSWORD" | docker login --username "$DOCKERHUB_USERNAME" --password-stdin
-            docker push gudditi/monkey
+            docker push gudditi/monkey:$(date +%Y%m%d-%H%M%S)
 workflows:
   build_and_test:
     jobs:
