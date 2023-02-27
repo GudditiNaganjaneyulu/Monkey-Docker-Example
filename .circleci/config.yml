@@ -17,6 +17,7 @@ jobs:
       - run:
           name: "install docker"
           command: " apt update && apt install docker -y"
+      - checkout:  
       - run:
           name: "build & push"
           command: "docker build -t gudditi/monkey ."
