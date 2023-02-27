@@ -2,13 +2,11 @@ version: 2.1
 jobs:
   build:
     docker:
-      - image: gudditi/ubuntu:latest
+      - image: docker:20.10.7-git
     steps:
-      - run:
-          name: Start Docker daemon
-          command: |
-            sudo service docker start
+  
       - checkout
+      - setup_remote_docker
       - run:
           name: build docker images
           command: |
