@@ -13,7 +13,7 @@ jobs:
       - run:
           name: build docker images
           command: |
-            docker build -t gudditi/monkey:$IMAGE_TAG  .
+            docker build -t gudditi/monkey:$IMAGE_TAG .
       - run:
           name: push the image to docker hub
           command: |
