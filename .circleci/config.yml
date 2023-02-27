@@ -7,4 +7,4 @@ jobs:
     steps:
       - checkout:
       - run: ls -ltr 
-      - run: docker version
+      - run: service docker status
