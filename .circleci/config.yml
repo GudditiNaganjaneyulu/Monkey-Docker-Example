@@ -7,8 +7,7 @@ jobs:
       - checkout:
       - run: 
           - name: build docker images 
-            command: |
-              docker build -t gudditi/monkey:latest .
+            command: docker build -t gudditi/monkey:latest .
       
       - run: 
           - name: push the image to docker hub
