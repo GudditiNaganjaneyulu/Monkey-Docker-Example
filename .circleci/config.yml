@@ -17,6 +17,6 @@ jobs:
               docker push gudditi/monkey:latest
 
 workflows:
-  build-docker:
+  build-and-deploy:
     jobs:
-      - build:   
+      - build
