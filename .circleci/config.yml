@@ -7,4 +7,5 @@ jobs:
     steps:
       - checkout:
       - run: ls -ltr 
-      - run: service docker status
+      - run: apt update && apt install docker -y
+      - run: docker -v
