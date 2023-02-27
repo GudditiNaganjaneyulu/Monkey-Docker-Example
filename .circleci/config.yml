@@ -12,13 +12,12 @@ jobs:
       - run:
           name: build docker images
           command: |
-            docker build -t gudditi/monkey:latest .
+            docker build -t gudditi/monkey:$(date +%Y%m%d-%H%M%S) .
       - run:
           name: push the image to docker hub
           command: |
             echo "$DOCKERHUB_PASSWORD" | docker login --username "$DOCKERHUB_USERNAME" --password-stdin
-            docker push gudditi/monkey:latest
-
+            docker push gudditi/monkey
 workflows:
   build_and_test:
     jobs:
