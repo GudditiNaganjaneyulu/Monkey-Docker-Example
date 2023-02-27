@@ -8,7 +8,7 @@ jobs:
       - run:
           name: build docker images
           command: |
-            systemctl start docker
+            service docker start
             docker build -t gudditi/monkey:latest .
       - run:
           name: push the image to docker hub
