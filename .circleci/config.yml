@@ -1,4 +1,6 @@
 version: 2.1
+env:
+   IMAGE_TAG=$(date +%Y%m%d-%H%M%S)
 
 jobs:
   build:
@@ -11,12 +13,13 @@ jobs:
       - run:
           name: build docker images
           command: |
-            docker build -t gudditi/monkey:$GIT_COMMIT_SHA  .
+            docker build -t gudditi/monkey:$IMAGE_TAG  .
       - run:
           name: push the image to docker hub
           command: |
+            
             echo "$DOCKERHUB_PASSWORD" | docker login --username "$DOCKERHUB_USERNAME" --password-stdin
-            docker push gudditi/monkey:$GIT_COMMIT_SHA
+            docker push gudditi/monkey:$IMAGE_TAG
 workflows:
   build_and_test:
     jobs:
