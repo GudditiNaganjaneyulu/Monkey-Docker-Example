@@ -11,13 +11,10 @@ jobs:
       - checkout
       - setup_remote_docker
       - run:
-          name: build docker images
+          name: Build and push Docker image
           command: |
+            IMAGE_TAG=$(date +%Y%m%d-%H%M%S)
             docker build -t gudditi/monkey:$IMAGE_TAG .
-      - run:
-          name: push the image to docker hub
-          command: |
-            
             echo "$DOCKERHUB_PASSWORD" | docker login --username "$DOCKERHUB_USERNAME" --password-stdin
             docker push gudditi/monkey:$IMAGE_TAG
 workflows:
