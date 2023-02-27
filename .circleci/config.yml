@@ -4,11 +4,14 @@ jobs:
     docker:
       - image: docker:20.10.9
     steps:
+      - run:
+          name: Start Docker daemon
+          command: |
+            sudo systemctl start docker
       - checkout
       - run:
           name: build docker images
           command: |
-            service docker start
             docker build -t gudditi/monkey:latest .
       - run:
           name: push the image to docker hub
