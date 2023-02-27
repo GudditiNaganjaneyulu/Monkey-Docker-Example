@@ -2,10 +2,20 @@ version: "1.0"
 jobs:
   build:
     docker:
-      - image: gudditi/ubuntu:latest
-  
+      - image: docker:20.10.9
     steps:
       - checkout:
-      - run: ls -ltr 
- 
-      - run: docker build -t gudditi/monkey .
+      - run: 
+          - name: build docker images 
+            command: |
+              docker build -t gudditi/monkey:latest .
+      
+      - run: 
+          - name: push the image to docker hub
+            command: |
+              docker login -u $DOCKERHUB_USERNAME -p $DOCKERHUB_PASSWORD
+              docker push gudditi/monkey:latest
+
+workflows:
+  jobs:
+    build:   
