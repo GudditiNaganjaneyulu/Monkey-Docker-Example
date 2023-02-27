@@ -2,12 +2,12 @@ version: 2.1
 jobs:
   build:
     docker:
-      - image: docker:20.10.9
+      - image: gudditi/ubuntu:latest
     steps:
       - run:
           name: Start Docker daemon
           command: |
-            sudo systemctl start docker
+            sudo service docker start
       - checkout
       - run:
           name: build docker images
