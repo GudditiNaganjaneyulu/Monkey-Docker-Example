@@ -9,6 +9,7 @@ jobs:
     docker:
       - image: docker:20.10.7-git
     steps:
+  
       - checkout
       - setup_remote_docker
       - run: apk add --no-cache python3 py3-pip && pip3 install awscli
@@ -25,16 +26,7 @@ jobs:
             docker build -t public.ecr.aws/q8s7n8c2/ecr-988:$IMAGE_TAG .
             aws ecr-public get-login-password --region us-east-1 | docker login --username AWS --password-stdin public.ecr.aws/q8s7n8c2
             docker push public.ecr.aws/q8s7n8c2/ecr-988:$IMAGE_TAG
-      - run:
-          name: Update ECS task definition
-          command: |
-            TASK_DEFINITION=$(aws ecs describe-task-definition --task-definition $ECS_TASK_DEFINITION_NAME)
-            TASK_DEFINITION=$(echo $TASK_DEFINITION | jq --arg IMAGE_TAG $IMAGE_TAG '.taskDefinition.containerDefinitions[0].image |= sub(":.*$"; ":" + $IMAGE_TAG)')
-            NEW_TASK_DEFINITION=$(echo $TASK_DEFINITION | jq 'del(.taskDefinition.status,.taskDefinition.taskDefinitionArn,.taskDefinition.revision)')
-            FAMILY=$(echo $TASK_DEFINITION | jq -r '.taskDefinition.family')
-            REGISTERED_TASK_DEFINITION=$(aws ecs register-task-definition --cli-input-json "$NEW_TASK_DEFINITION")
-            REGISTERED_TASK_DEFINITION_ARN=$(echo $REGISTERED_TASK_DEFINITION | jq -r '.taskDefinition.taskDefinitionArn')
-            aws ecs update-service --cluster $ECS_CLUSTER_NAME --service $FAMILY --task-definition $REGISTERED_TASK_DEFINITION_ARN
+      
 workflows:
   build_and_test:
     jobs:
