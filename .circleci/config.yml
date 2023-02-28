@@ -1,8 +1,7 @@
 version: 2.1
 env:
    IMAGE_TAG=$(date +%Y%m%d-%H%M%S)
-   ECS_CLUSTER_NAME= "fargate"
-   ECS_TASK_DEFINITION_NAME= "monkey"
+
 
 jobs:
   build:
@@ -12,20 +11,27 @@ jobs:
   
       - checkout
       - setup_remote_docker
-      - run:
-          name: Configure AWS CLI
-          command: |
-            aws configure set aws_access_key_id $AWS_ACCESS_KEY_ID
-            aws configure set aws_secret_access_key $AWS_SECRET_ACCESS_KEY
-            aws configure set region $AWS_REGION
-      - run:
-          name: Build and push Docker image
-          command: |
-            IMAGE_TAG=$(date +%Y%m%d-%H%M%S)
-            docker build -t public.ecr.aws/q8s7n8c2/ecr-988:$IMAGE_TAG .
-            aws ecr-public get-login-password --region us-east-1 | docker login --username AWS --password-stdin public.ecr.aws/q8s7n8c2
-            docker push public.ecr.aws/q8s7n8c2/ecr-988:$IMAGE_TAG
-      
+
+      - name: Update ECS task definition and deploy new image
+        run: |
+          IMAGE_TAG=$(date +%Y%m%d-%H%M%S)
+          ECR_REPO=public.ecr.aws/q8s7n8c2/ecr-988
+          ECR_IMAGE=$ECR_REPO:$IMAGE_TAG
+          aws configure set aws_access_key_id $AWS_ACCESS_KEY_ID
+          aws configure set aws_secret_access_key $AWS_SECRET_ACCESS_KEY
+          aws configure set region $AWS_REGION
+          aws ecr-public get-login-password --region us-east-1 | docker login --username AWS --password-stdin $ECR_REPO
+          docker build -t $ECR_IMAGE .
+          docker push $ECR_IMAGE
+          aws ecs register-task-definition \
+            --family monkey \
+            --container-definitions '[{"name":"mycontainer","image":"'$ECR_IMAGE'","cpu":10,"memory":512}]'
+          aws deploy create-deployment \
+            --application-name myapp \
+            --deployment-group-name mydg \
+            --revision '{"revisionType":"ECS","ecsRevision":{"taskDefinition":"arn:aws:ecs:REGION:ACCOUNT_ID:task-definition/monkey:REVISION"}}' \
+            --deployment-config-name CodeDeployDefault.ECSLinear10PercentEveryMinute
+
       
 workflows:
   build_and_test:
