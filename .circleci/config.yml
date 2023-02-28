@@ -11,12 +11,20 @@ jobs:
       - checkout
       - setup_remote_docker
       - run:
+          name: Configure AWS CLI
+          command: |
+            aws configure set aws_access_key_id $AWS_ACCESS_KEY_ID
+            aws configure set aws_secret_access_key $AWS_SECRET_ACCESS_KEY
+            aws configure set region $AWS_REGION
+      - run:
           name: Build and push Docker image
           command: |
             IMAGE_TAG=$(date +%Y%m%d-%H%M%S)
             docker build -t gudditi/monkey:$IMAGE_TAG .
             echo "$DOCKERHUB_PASSWORD" | docker login --username "$DOCKERHUB_USERNAME" --password-stdin
             docker push gudditi/monkey:$IMAGE_TAG
+
+       
 workflows:
   build_and_test:
     jobs:
