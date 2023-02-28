@@ -1,6 +1,8 @@
 version: 2.1
 env:
    IMAGE_TAG=$(date +%Y%m%d-%H%M%S)
+   ECS_CLUSTER_NAME: "fargate"
+   ECS_TASK_DEFINITION_NAME: "monkey"
 
 jobs:
   build:
@@ -24,14 +26,17 @@ jobs:
             docker build -t public.ecr.aws/q8s7n8c2/ecr-988:$IMAGE_TAG .
             aws ecr-public get-login-password --region us-east-1 | docker login --username AWS --password-stdin public.ecr.aws/q8s7n8c2
             docker push public.ecr.aws/q8s7n8c2/ecr-988:$IMAGE_TAG
+
       - run:
-          name: Update ECS task definition with new image
+          name: Update ECS task definition
           command: |
-            ECR_IMAGE_URI=$AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/$AWS_ECR_REPOSITORY:$IMAGE_TAG
-            TASK_DEFINITION=$(aws ecs describe-task-definition --task-definition $AWS_ECS_TASK_DEFINITION)
-            echo $TASK_DEFINITION | jq --arg ECR_IMAGE_URI $ECR_IMAGE_URI '.taskDefinition.containerDefinitions[0].image = $ECR_IMAGE_URI' > task_definition.json
-            aws ecs register-task-definition --cli-input-json file://task_definition.json
-       
+            TASK_DEFINITION=$(aws ecs describe-task-definition --task-definition $ECS_TASK_DEFINITION_NAME)
+            TASK_DEFINITION=$(echo $TASK_DEFINITION | jq --arg IMAGE_TAG $IMAGE_TAG '.taskDefinition.containerDefinitions[0].image |= sub(":.*$"; ":" + $IMAGE_TAG)')
+            NEW_TASK_DEFINITION=$(echo $TASK_DEFINITION | jq 'del(.taskDefinition.status,.taskDefinition.taskDefinitionArn,.taskDefinition.revision)')
+            FAMILY=$(echo $TASK_DEFINITION | jq -r '.taskDefinition.family')
+            REGISTERED_TASK_DEFINITION=$(aws ecs register-task-definition --cli-input-json "$NEW_TASK_DEFINITION")
+            REGISTERED_TASK_DEFINITION_ARN=$(echo $REGISTERED_TASK_DEFINITION | jq -r '.taskDefinition.taskDefinitionArn')
+            aws ecs update-service --cluster $ECS_CLUSTER_NAME --service $FAMILY --task-definition $REGISTERED_TASK_DEFINITION_ARN   
 workflows:
   build_and_test:
     jobs:
