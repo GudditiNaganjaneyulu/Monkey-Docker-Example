@@ -32,7 +32,7 @@ jobs:
       - run:
           name: Update ECS service
           command: |
-            aws ecs update-service --cluster $ECS_CLUSTER --service $ECS_SERVICE --force-new-deployment --task-definition $TASK_DEFINITION_NAME:$((IMAGE_TAG+1))
+            aws ecs update-service --cluster $ECS_CLUSTER --service $ECS_SERVICE --force-new-deployment --task-definition $TASK_DEFINITION_NAME
 
 workflows:
   build_and_test:
