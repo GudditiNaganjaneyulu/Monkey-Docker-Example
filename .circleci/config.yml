@@ -18,6 +18,18 @@ jobs:
             echo "$DOCKERHUB_PASSWORD" | docker login --username "$DOCKERHUB_USERNAME" --password-stdin
             docker push gudditi/monkey:$IMAGE_TAG
 
+      
+  deploy:
+    docker:
+      - image: circleci/aws-cli:latest
+    steps:
+      - run: |
+          aws configure set aws_access_key_id $AWS_ACCESS_KEY_ID
+          aws configure set aws_secret_access_key $AWS_SECRET_ACCESS_KEY
+          aws configure set default.region $AWS_REGION
+      - run: |
+          aws ecs update-service --cluster $ECS_CLUSTER --service $ECS_SERVICE --force-new-deployment
+
        
 workflows:
   build_and_test:
