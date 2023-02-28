@@ -26,13 +26,13 @@ jobs:
       - run:
           name: Build and push Docker image
           command: |
-            IMAGE_TAG=$(date +%Y%m%d-%H%M%S)
             docker build -t gudditi/monkey:latest-$IMAGE_TAG .
             echo "$DOCKERHUB_PASSWORD" | docker login --username "$DOCKERHUB_USERNAME" --password-stdin
             docker push gudditi/monkey:latest-$IMAGE_TAG
       - run:
           name: Update ECS service
-          command: aws ecs update-service --cluster $ECS_CLUSTER --service $ECS_SERVICE --force-new-deployment --task-definition $TASK_DEFINITION_NAME
+          command: |
+            aws ecs update-service --cluster $ECS_CLUSTER --service $ECS_SERVICE --force-new-deployment --task-definition $TASK_DEFINITION_NAME:$IMAGE_TAG
 
 workflows:
   build_and_test:
