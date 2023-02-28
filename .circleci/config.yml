@@ -3,23 +3,22 @@ env:
    IMAGE_TAG=$(date +%Y%m%d-%H%M%S)
 
 jobs:
-  deploy:
+  build:
     docker:
-      - image: circleci/aws-cli:latest
+      - image: docker:20.10.7-git
     steps:
-      - run: |
-          aws configure set aws_access_key_id $AWS_ACCESS_KEY_ID
-          aws configure set aws_secret_access_key $AWS_SECRET_ACCESS_KEY
-          aws configure set default.region $AWS_REGION
-      - run: |
-          IMAGE_TAG=$(date +%Y%m%d-%H%M%S)
-          docker build -t gudditi/monkey:latest-$IMAGE_TAG .
-          echo "$DOCKERHUB_PASSWORD" | docker login --username "$DOCKERHUB_USERNAME" --password-stdin
-          docker push gudditi/monkey:latest-$IMAGE_TAG
-      - run: aws ecs update-service --cluster $ECS_CLUSTER --service $ECS_SERVICE --force-new-deployment --task-definition $TASK_DEFINITION_NAME
-
+          - run: |
+              aws configure set aws_access_key_id $AWS_ACCESS_KEY_ID
+              aws configure set aws_secret_access_key $AWS_SECRET_ACCESS_KEY
+              aws configure set default.region $AWS_REGION
+          - run: |
+              IMAGE_TAG=$(date +%Y%m%d-%H%M%S)
+              docker build -t gudditi/monkey:latest-$IMAGE_TAG .
+              echo "$DOCKERHUB_PASSWORD" | docker login --username "$DOCKERHUB_USERNAME" --password-stdin
+              docker push gudditi/monkey:latest-$IMAGE_TAG
+          - run: aws ecs update-service --cluster $ECS_CLUSTER --service $ECS_SERVICE --force-new-deployment --task-definition $TASK_DEFINITION_NAME
         
 workflows:
   build_and_test:
     jobs:
-      - deploy
+      - build
