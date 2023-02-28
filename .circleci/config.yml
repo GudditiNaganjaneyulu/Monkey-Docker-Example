@@ -3,22 +3,6 @@ env:
    IMAGE_TAG=$(date +%Y%m%d-%H%M%S)
 
 jobs:
-  build:
-    docker:
-      - image: docker:20.10.7-git
-    steps:
-  
-      - checkout
-      - setup_remote_docker
-      - run:
-          name: Build and push Docker image
-          command: |
-            IMAGE_TAG=$(date +%Y%m%d-%H%M%S)
-            docker build -t gudditi/monkey:$IMAGE_TAG .
-            echo "$DOCKERHUB_PASSWORD" | docker login --username "$DOCKERHUB_USERNAME" --password-stdin
-            docker push gudditi/monkey:$IMAGE_TAG
-
-      
   deploy:
     docker:
       - image: circleci/aws-cli:latest
@@ -28,10 +12,14 @@ jobs:
           aws configure set aws_secret_access_key $AWS_SECRET_ACCESS_KEY
           aws configure set default.region $AWS_REGION
       - run: |
-          aws ecs update-service --cluster $ECS_CLUSTER --service $ECS_SERVICE --force-new-deployment
+          IMAGE_TAG=$(date +%Y%m%d-%H%M%S)
+          docker build -t gudditi/monkey:latest-$IMAGE_TAG .
+          echo "$DOCKERHUB_PASSWORD" | docker login --username "$DOCKERHUB_USERNAME" --password-stdin
+          docker push gudditi/monkey:latest-$IMAGE_TAG
+      - run: aws ecs update-service --cluster $ECS_CLUSTER --service $ECS_SERVICE --force-new-deployment --task-definition $TASK_DEFINITION_NAME
 
-       
+        
 workflows:
   build_and_test:
     jobs:
-      - build
+      - deploy
