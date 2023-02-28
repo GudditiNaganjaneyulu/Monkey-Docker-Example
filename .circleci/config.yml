@@ -1,8 +1,8 @@
 version: 2.1
 env:
    IMAGE_TAG=$(date +%Y%m%d-%H%M%S)
-   ECS_CLUSTER_NAME: "fargate"
-   ECS_TASK_DEFINITION_NAME: "monkey"
+   ECS_CLUSTER_NAME= "fargate"
+   ECS_TASK_DEFINITION_NAME= "monkey"
 
 jobs:
   build:
@@ -26,6 +26,7 @@ jobs:
             docker build -t public.ecr.aws/q8s7n8c2/ecr-988:$IMAGE_TAG .
             aws ecr-public get-login-password --region us-east-1 | docker login --username AWS --password-stdin public.ecr.aws/q8s7n8c2
             docker push public.ecr.aws/q8s7n8c2/ecr-988:$IMAGE_TAG
+      
       
 workflows:
   build_and_test:
