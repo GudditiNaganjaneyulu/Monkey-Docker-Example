@@ -1,0 +1,40 @@
+version: 2.1
+env:
+  IMAGE_TAG: $(date +%Y%m%d-%H%M%S)
+
+jobs:
+  build:
+    docker:
+      - image: circleci/python:3.9.7-buster
+    steps:
+      - checkout
+      - setup_remote_docker
+      - run:
+          name: Install apt-get
+          command: |
+            sudo apt-get update && sudo apt-get install -y apt-utils
+      - run:
+          name: Install AWS CLI
+          command: |
+            sudo apt-get install -y awscli
+      - run:
+          name: Configure AWS CLI
+          command: |
+            aws configure set aws_access_key_id $AWS_ACCESS_KEY_ID
+            aws configure set aws_secret_access_key $AWS_SECRET_ACCESS_KEY
+            aws configure set default.region $AWS_REGION
+      - run:
+          name: Build and push Docker image
+          command: |
+            docker build -t gudditi/monkey:latest-$IMAGE_TAG .
+            echo "$DOCKERHUB_PASSWORD" | docker login --username "$DOCKERHUB_USERNAME" --password-stdin
+            docker push gudditi/monkey:latest-$IMAGE_TAG
+      - run:
+          name: Update ECS service
+          command: |
+            aws ecs update-service --cluster $ECS_CLUSTER --service $ECS_SERVICE --force-new-deployment --task-definition $TASK_DEFINITION_NAME
+
+workflows:
+  build_and_test:
+    jobs:
+      - build
